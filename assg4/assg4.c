@@ -14,21 +14,24 @@
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
 
-
-extern (*context_counter)(struct task_struct *,struct task_struct *,long );
-extern (* rq_size)(long,unsigned int, unsigned int);
-
+extern int (*context_counter)(struct task_struct *,struct task_struct *,long,int);
+extern int (* rq_size)(int,unsigned int,unsigned long);
 int pid,prio;
-module_param(pid, int, 0);
-module_param(prio, int, 0);
+
+//module_param(pid, int, 0);
+//module_param(prio, int, 0);
 
 static int sched_counter[4],per_pid_switch_counter[4],grqsize[4];
 static int gcpu;
 static unsigned int entryy,exitt,total;
 
 /***********************proc file section start *************************************************************/
-struct proc_dir_entry *assi3_proc_file;
-struct proc_dir_entry *assi3_proc_file2;
+struct proc_dir_entry *assi4_proc_file;
+struct proc_dir_entry *assi4_proc_file2;
+int proc_open2(struct inode *, struct file *);
+int proc_open(struct inode *, struct file *);
+static int proc_readings(struct seq_file * , void * );
+static int proc_readings2(struct seq_file *, void *);
 
 struct file_operations proc_file_operations ={
 	.owner = THIS_MODULE,
@@ -56,19 +59,19 @@ int proc_open2(struct inode *pinode, struct file *pfile)
 
 static int proc_readings(struct seq_file * sfile, void * any)
 {
-	seq_printf(sfile,"No of Reads: %d\nNo of Writes: %d",write_count,queue_head);
+	seq_printf(sfile,"No of Reads: d\nNo of Writes: d");
 	return 0;
 }
 
 static int proc_readings2(struct seq_file * sfile, void * any)
 {
-	seq_printf(sfile,"No of Reads: %d\nNo of Writes: %d\n Queue_head x0%lu\n",read_count,write_count,queue_head);
+	seq_printf(sfile,"No of Reads: d\nNo of Writes: d\n");
 	return 0;
 }
 /******************************** proc file section end **************************************************************/
 
 /******************************* *hook section start ***************************************************************/
-int hk_context_counter(struct task_struct next,struct task_struct prev,long tv_nsec,int cpu)
+int hk_context_counter(struct task_struct *next,struct task_struct *prev,long tv_nsec,int cpu)
 {
 	sched_counter[cpu]++;
 	if(next->pid == pid)
@@ -81,12 +84,14 @@ int hk_context_counter(struct task_struct next,struct task_struct prev,long tv_n
 		exitt= tv_nsec;
 		total+= tv_nsec;
 	}
+	return 0;
 }
 
-int hk_rq_size(long cpu,unsigned int rqsize,int nr_switches)
+int hk_rq_size(int cpu,unsigned int rqsize,unsigned long nr_switches)
 {
 	gcpu=cpu;
 	grqsize[cpu]=rqsize;
+	return 0;
 }
 
 /*************************************** hook section end ***************************************************/

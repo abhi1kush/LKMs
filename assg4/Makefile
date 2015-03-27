@@ -1,5 +1,4 @@
-obj-m += ex8_13.o
-obj-m += ex8_13_module2.o
+obj-m += assg4.o
 
 KDIR := /lib/modules/$(shell uname -r)/build
 
