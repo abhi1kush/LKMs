@@ -93,7 +93,7 @@
 /********code inserted for exporting symbol **********************************/
 int (*context_counter)(struct task_struct *,struct task_struct *,int,unsigned int)=NULL;
 EXPORT_SYMBOL(context_counter);
-int (*rq_size)(int,unsigned int)=NULL;
+int (*rq_size)(int,unsigned int,unsigned long)=NULL;
 EXPORT_SYMBOL(rq_size);
 int (*per_pid_stats)(struct task_struct *)=NULL;
 EXPORT_SYMBOL(per_pid_stats);
@@ -2793,7 +2793,7 @@ need_resched:
 	/**********abhi: hook inserted **********************************************************/
 	if(rq_size!=NULL)
 	{
-		rq_size(rq->cpu,rq->nr_running);
+		rq_size(rq->cpu,rq->nr_running,rq->nr_switches);
 	}
 	if(per_pid_stats!=NULL)
 	{

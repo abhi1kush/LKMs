@@ -129,7 +129,7 @@ static int init(void)
 	}
 	printk(KERN_INFO"proc entry created \n");
 	// asgining hook pointer
-	context_counter = hk_context_counter;
+	//context_counter = hk_context_counter;
 	rq_size=hk_rq_size;  	
 	per_pid_stats=hk_per_pid_stats;
 	printk(KERN_INFO "inside the %s function\n", __FUNCTION__);
@@ -143,6 +143,7 @@ static void  cleanup(void)
 	per_pid_stats=NULL;
 	proc_remove(assi4_proc_file);
 	proc_remove(assi4_proc_file2);
+	printk(KERN_INFO"no of context switches %ld",switches[0]+switches[1]+switches[2]+switches[3]);
   	printk(KERN_INFO "lkm removed\n");
 }
 /*********************************************init() cleanup() section end *******************************/
