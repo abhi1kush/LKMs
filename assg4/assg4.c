@@ -14,17 +14,17 @@
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
 
-extern int (*context_counter)(struct task_struct *,struct task_struct *,long,int);
+extern int (*context_counter)(struct task_struct *,struct task_struct *,int,unsigned long);
 extern int (* rq_size)(int,unsigned int,unsigned long);
 extern int (* per_pid_stats)(struct task_struct *);
-int pid,prio;
+int pid=0,prio=0;
 
 //module_param(pid, int, 0);
 //module_param(prio, int, 0);
 
 static unsigned long  sched_counter[4],per_pid_switch_counter[4];
 static long grqsize[4];
-static int gcpu;
+static int gcpu,check;
 static unsigned int entryy,exitt,total;
 static unsigned long migration,tot,switches[4];
 /***********************proc file section start *************************************************************/
@@ -61,31 +61,33 @@ int proc_open2(struct inode *pinode, struct file *pfile)
 
 static int proc_readings(struct seq_file * sfile, void * any)
 {
-	seq_printf(sfile,": d\nNo of Writes: d");
+	seq_printf(sfile,"");
 	return 0;
 }
 
 static int proc_readings2(struct seq_file * sfile, void * any)
 {
-	seq_printf(sfile,"#pid: %d No of CS: cpu0 %ld cpu1 %ld cpu %ld cpu %ld\n",pid,switches[0],switches[1],switches[2],switches[3]);
-	seq_printf(sfile,"$pid: %d No of CS: cpu0 %ld cpu1 %ld cpu %ld cpu %ld\n",pid,sched_counter[0],sched_counter[1],sched_counter[2],sched_counter[3]);
+	seq_printf(sfile,"#: No of CS: cpu0 %ld cpu1 %ld cpu %ld cpu %ld\n",switches[0],switches[1],switches[2],switches[3]);
+	seq_printf(sfile,"&: No of CS: cpu0 %ld cpu1 %ld cpu %ld cpu %ld\n",sched_counter[0],sched_counter[1],sched_counter[2],sched_counter[3]);
+	seq_printf(sfile,"*: Length of RQ: cpu0 %ld cpu1 %ld cpu2 %ld cpu3 %ld\n",grqsize[0],grqsize[1],grqsize[2],grqsize[3]);
+	//seq_printf(sfile,"check %d \n",check);
 	return 0;
 }
 /******************************** proc file section end **************************************************************/
 
 /******************************* *hook section start ***************************************************************/
-int hk_context_counter(struct task_struct *next,struct task_struct *prev,long tv_nsec,int cpu)
+int hk_context_counter(struct task_struct *next,struct task_struct *prev,int cpu,unsigned long switchh)
 {
 	sched_counter[cpu]++;
 	if(next->pid == pid)
 	{
 		per_pid_switch_counter[cpu]++;
-		entryy = tv_nsec;
+		//entryy = tv_nsec;
 	}
 	else if(prev->pid == pid)
 	{
-		exitt= tv_nsec;
-		total+= tv_nsec;
+		//exitt= tv_nsec;
+		//total+= tv_nsec;
 	}
 	return 0;
 }
@@ -129,7 +131,7 @@ static int init(void)
 	}
 	printk(KERN_INFO"proc entry created \n");
 	// asgining hook pointer
-	//context_counter = hk_context_counter;
+	context_counter = hk_context_counter;
 	rq_size=hk_rq_size;  	
 	per_pid_stats=hk_per_pid_stats;
 	printk(KERN_INFO "inside the %s function\n", __FUNCTION__);

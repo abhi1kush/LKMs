@@ -91,7 +91,7 @@
 #include <trace/events/sched.h>
 
 /********code inserted for exporting symbol **********************************/
-int (*context_counter)(struct task_struct *,struct task_struct *,int,unsigned int)=NULL;
+int (*context_counter)(struct task_struct *,struct task_struct *,int,unsigned long)=NULL;
 EXPORT_SYMBOL(context_counter);
 int (*rq_size)(int,unsigned int,unsigned long)=NULL;
 EXPORT_SYMBOL(rq_size);
