@@ -17,12 +17,12 @@
 extern int (*context_counter)(struct task_struct *,struct task_struct *,int,unsigned long);
 extern int (* rq_size)(int,unsigned int,unsigned long);
 extern int (* per_pid_stats)(struct task_struct *);
-int pid,prio;
+int pid,prio,curr_cpu;
 
 module_param(pid, int, 0);
 //module_param(prio, int, 0);
 
-static unsigned long  sched_counter[4],per_pid_switch_counter[4];
+static unsigned long  sched_counter[4],per_pid_switch_counter[4],total_time;
 static long grqsize[4];
 static int gcpu,prio1,prio2,prio3,prio4;
 static unsigned int entryy,exitt,total;
@@ -62,7 +62,9 @@ int proc_open2(struct inode *pinode, struct file *pfile)
 static int proc_readings(struct seq_file * sfile, void * any)
 {
 	seq_printf(sfile,"1pid %d cpu0 %ld cpu1 %ld cpu2 %ld cpu3 %ld total %d\n",pid,per_pid_switch_counter[0],per_pid_switch_counter[1],per_pid_switch_counter[2],per_pid_switch_counter[3],per_pid_switch_counter[0]+per_pid_switch_counter[1]+per_pid_switch_counter[2]+per_pid_switch_counter[3]);
-	seq_printf(sfile,"2pid %d prio %d static_prio %ld normal_prio %ld rt_priority %d",pid,prio1,prio2,prio3,prio4);
+	seq_printf(sfile,"2pid %d prio %d static_prio %d normal_prio %d rt_priority %d\n",pid,prio1,prio2,prio3,prio4);
+	seq_printf(sfile,"curr_cpu %d \n",curr_cpu);
+	seq_printf(sfile,"Total time spent on cpu %d \n",total_time);
 	return 0;
 }
 
@@ -83,6 +85,7 @@ int hk_context_counter(struct task_struct *next,struct task_struct *prev,int cpu
 	if(next->pid == pid)
 	{
 		per_pid_switch_counter[cpu]++;
+		curr_cpu=cpu;
 		//entryy = tv_nsec;
 	}
 	else if(prev->pid == pid)
@@ -110,7 +113,8 @@ int hk_per_pid_stats(struct task_struct *prev)
 		prio1 = prev->prio;
 		prio2 =prev->static_prio;
 		prio3= prev->normal_prio;
-		prio4= prev->rt_priority; 
+		prio4= prev->rt_priority;
+		total_time=prev->se.sum_exec_runtime; 
 	}
 	return 0;
 }
@@ -150,7 +154,6 @@ static void  cleanup(void)
 	per_pid_stats=NULL;
 	proc_remove(assi4_proc_file);
 	proc_remove(assi4_proc_file2);
-	printk(KERN_INFO"no of context switches %ld",switches[0]+switches[1]+switches[2]+switches[3]);
   	printk(KERN_INFO "lkm removed\n");
 }
 /*********************************************init() cleanup() section end *******************************/
