@@ -17,14 +17,14 @@
 extern int (*context_counter)(struct task_struct *,struct task_struct *,int,unsigned long);
 extern int (* rq_size)(int,unsigned int,unsigned long);
 extern int (* per_pid_stats)(struct task_struct *);
-int pid=0,prio=0;
+int pid,prio;
 
-//module_param(pid, int, 0);
+module_param(pid, int, 0);
 //module_param(prio, int, 0);
 
 static unsigned long  sched_counter[4],per_pid_switch_counter[4];
 static long grqsize[4];
-static int gcpu,check;
+static int gcpu,prio1,prio2,prio3,prio4;
 static unsigned int entryy,exitt,total;
 static unsigned long migration,tot,switches[4];
 /***********************proc file section start *************************************************************/
@@ -61,7 +61,8 @@ int proc_open2(struct inode *pinode, struct file *pfile)
 
 static int proc_readings(struct seq_file * sfile, void * any)
 {
-	seq_printf(sfile,"");
+	seq_printf(sfile,"1pid %d cpu0 %ld cpu1 %ld cpu2 %ld cpu3 %ld total %d\n",pid,per_pid_switch_counter[0],per_pid_switch_counter[1],per_pid_switch_counter[2],per_pid_switch_counter[3],per_pid_switch_counter[0]+per_pid_switch_counter[1]+per_pid_switch_counter[2]+per_pid_switch_counter[3]);
+	seq_printf(sfile,"2pid %d prio %d static_prio %ld normal_prio %ld rt_priority %d",pid,prio1,prio2,prio3,prio4);
 	return 0;
 }
 
@@ -70,7 +71,7 @@ static int proc_readings2(struct seq_file * sfile, void * any)
 	seq_printf(sfile,"#: No of CS: cpu0 %ld cpu1 %ld cpu %ld cpu %ld\n",switches[0],switches[1],switches[2],switches[3]);
 	seq_printf(sfile,"&: No of CS: cpu0 %ld cpu1 %ld cpu %ld cpu %ld\n",sched_counter[0],sched_counter[1],sched_counter[2],sched_counter[3]);
 	seq_printf(sfile,"*: Length of RQ: cpu0 %ld cpu1 %ld cpu2 %ld cpu3 %ld\n",grqsize[0],grqsize[1],grqsize[2],grqsize[3]);
-	//seq_printf(sfile,"check %d \n",check);
+	seq_printf(sfile,"@@ NO_of_migration %ld \n",migration);
 	return 0;
 }
 /******************************** proc file section end **************************************************************/
@@ -106,6 +107,10 @@ int hk_per_pid_stats(struct task_struct *prev)
 	{	
 		tot = prev->se.sum_exec_runtime;
 		migration = prev->se.nr_migrations;
+		prio1 = prev->prio;
+		prio2 =prev->static_prio;
+		prio3= prev->normal_prio;
+		prio4= prev->rt_priority; 
 	}
 	return 0;
 }
