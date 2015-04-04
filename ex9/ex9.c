@@ -12,6 +12,11 @@
 #include <asm/current.h>
 #include <linux/sched.h>
 
+struct kobject *k_obj;
+static struct kobj_attribute k_obj_attr =
+        __ATTR(partition_id, S_IRUGO, partition_id_show, NULL);
+
+
 static int init(void)
 {
   printk(KERN_INFO "inside the %s function\n", __FUNCTION__);
@@ -19,8 +24,14 @@ static int init(void)
 }
 
 static void  cleanup(void)
-{ 
-  printk(KERN_INFO "lkm removed\n");
+{
+  ret = sysfs_create_file(k_obj, &k_obj_attr.attr);
+	if (ret) 
+  {
+    printk(KERN_ALERT "sysfs_create_file k_obj_attr failed \n");
+		return ret;
+	}
+  	printk(KERN_INFO "lkm removed\n");
 }
 
 module_init(init);
