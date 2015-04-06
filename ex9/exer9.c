@@ -58,6 +58,17 @@ static struct attribute_group attr_group = {
     .attrs = attrs,
 };
 
+int fs_details(char *filename,int pid)
+{
+  struct inode *ind;
+  struct task_struct *ts;
+  ts = pid_task(find_vpid((pid_t)pid), PIDTYPE_PID);
+  
+  ind = ts->files->dentry->d_inode;
+  printk(KERN_INFO"inode no: %ld",ind->i_ino);
+}
+
+
 static struct kobject *example_kobj;
 
 static int init(void)
