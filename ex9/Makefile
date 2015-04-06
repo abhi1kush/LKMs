@@ -1,4 +1,4 @@
-obj-m += ex9.o
+obj-m += exer9.o
 
 KDIR := /lib/modules/$(shell uname -r)/build
 
