@@ -71,8 +71,7 @@ int fs_details(char *filename,int pid)
   
   ts = pid_task(find_vpid((pid_t)pid), PIDTYPE_PID);
   rcu_read_lock();
-  f = ts->file;
-  fdt = files_fdtable(f);
+  fdt = files_fdtable(ts->file);
   while(fdt->fd[i] !=NULL)
   {
     files_path = fdt->fd[i]->f_path;
