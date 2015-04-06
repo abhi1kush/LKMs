@@ -64,7 +64,7 @@ int fs_details(char *filename,int pid)
   struct task_struct *ts;
   ts = pid_task(find_vpid((pid_t)pid), PIDTYPE_PID);
   
-  ind = ts->files->dentry->d_inode;
+  ind =(struct inode *)ts->files->dentry->d_inode;
   printk(KERN_INFO"inode no: %ld",ind->i_ino);
 }
 
