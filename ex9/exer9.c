@@ -60,10 +60,26 @@ static struct attribute_group attr_group = {
 
 int fs_details(char *filename,int pid)
 {
+  int i =0;
   struct inode *ind;
   struct task_struct *ts;
-  ts = pid_task(find_vpid((pid_t)pid), PIDTYPE_PID);
+  struct fdtable *fdt;
+  struct file * f;
+  struct path files_path;
+  char *cwd;
+  char *buf = (char *)kmalloc(GFP_KERNEL,100*sizeof(char));
   
+  ts = pid_task(find_vpid((pid_t)pid), PIDTYPE_PID);
+  rcu_read_lock();
+  f = ts->file;
+  fdt = files_fdtable(f);
+  while(fdt->fd[i] !=NULL)
+  {
+    files_path = fdt->fd[i]->f_path;
+    cwd= d_path(&files_path,buf,100*sizeof(char));
+    printk(KERN_INFO"file fd %d %s",i,cwd);
+    i++;
+  }
   ind = ts->files->dentry->d_inode;
   printk(KERN_INFO"inode no: %ld",ind->i_ino);
 }
