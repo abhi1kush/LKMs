@@ -18,28 +18,16 @@
 
 static int finput;
 static int foutput;
+char finput_buf[100];
 
-
-static ssize_t f_show(struct kobject *kobj, struct kobj_attribute *attr,char *buf)
+static ssize_t finput_show(struct kobject *kobj, struct kobj_attribute *attr,char *buf)
 {
-    int var;
-
-    if (strcmp(attr->attr.name, "finput") == 0)
-      var = finput;
-    else
-      var = foutput;
-    return sprintf(buf, "%d\n", var);
+    return sprintf(buf, "%s\n", finput_buf);
 }
 
-static ssize_t f_store(struct kobject *kobj, struct kobj_attribute *attr,const char *buf, size_t count)
+static ssize_t finput_store(struct kobject *kobj, struct kobj_attribute *attr,const char *buf, size_t count)
 {
-    int var;
-
-    sscanf(buf, "%du", &var);
-    if (strcmp(attr->attr.name, "finput") == 0)
-      finput = var;
-    else
-      foutput = var;
+    sscanf(buf, "%s", finput_buf);
     return count;
 }
 
@@ -74,13 +62,17 @@ int fs_details(char *filename,int pid)
   fdt = files_fdtable(ts->file);
   while(fdt->fd[i] !=NULL)
   {
-    files_path = fdt->fd[i]->f_path;
-    cwd= d_path(&files_path,buf,100*sizeof(char));
-    printk(KERN_INFO"file fd %d %s",i,cwd);
+    if(strcmp(fd[i]->f_path.dentry->d_name,filename)==0)
+    {
+      files_path = fdt->fd[i]->f_path;
+      cwd= d_path(&files_path,buf,100*sizeof(char));
+      printk(KERN_INFO"file fd %d %s",i,cwd);
+    }
     i++;
   }
   ind = ts->files->dentry->d_inode;
   printk(KERN_INFO"inode no: %ld",ind->i_ino);
+  rcu_read_unlock();
 }
 
 
