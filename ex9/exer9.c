@@ -19,6 +19,9 @@
 static int finput;
 static int foutput;
 char finput_buf[100];
+char foutput_buf[100];
+char filename[50];
+int pid;
 
 static ssize_t finput_show(struct kobject *kobj, struct kobj_attribute *attr,char *buf)
 {
@@ -31,10 +34,21 @@ static ssize_t finput_store(struct kobject *kobj, struct kobj_attribute *attr,co
     return count;
 }
 
+static ssize_t foutput_show(struct kobject *kobj, struct kobj_attribute *attr,char *buf)
+{
+    return sprintf(buf, "%s\n", foutput_buf);
+}
+
+static ssize_t foutput_store(struct kobject *kobj, struct kobj_attribute *attr,const char *buf, size_t count)
+{
+    sscanf(buf, "%s", foutput_buf);
+    return count;
+}
+
 static struct kobj_attribute finput_attribute =
-  __ATTR(finput, 0664, f_show, f_store);
+  __ATTR(finput, 0664, finput_show, finput_store);
 static struct kobj_attribute foutput_attribute =
-  __ATTR(foutput, 0664, f_show, f_store);
+  __ATTR(foutput, 0664, foutput_show, foutput_store);
 
 static struct attribute *attrs[] = {
     &finput_attribute.attr,
