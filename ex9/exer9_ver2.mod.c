@@ -14,30 +14,8 @@ __attribute__((section(".gnu.linkonce.this_module"))) = {
 	.arch = MODULE_ARCH_INIT,
 };
 
-static const struct modversion_info ____versions[]
-__used
-__attribute__((section("__versions"))) = {
-	{ 0xef025c67, __VMLINUX_SYMBOL_STR(module_layout) },
-	{ 0xde98c647, __VMLINUX_SYMBOL_STR(kobject_put) },
-	{ 0xc38c0e90, __VMLINUX_SYMBOL_STR(sysfs_create_group) },
-	{ 0x256a10b2, __VMLINUX_SYMBOL_STR(kobject_create_and_add) },
-	{ 0x3bfcedd5, __VMLINUX_SYMBOL_STR(kernel_kobj) },
-	{ 0xa811daa3, __VMLINUX_SYMBOL_STR(d_path) },
-	{ 0x27e1a049, __VMLINUX_SYMBOL_STR(printk) },
-	{ 0xe2d5255a, __VMLINUX_SYMBOL_STR(strcmp) },
-	{ 0x961a13a0, __VMLINUX_SYMBOL_STR(pid_task) },
-	{ 0x9011a7bc, __VMLINUX_SYMBOL_STR(find_vpid) },
-	{ 0x94745f80, __VMLINUX_SYMBOL_STR(kmem_cache_alloc_trace) },
-	{ 0x582bcf5, __VMLINUX_SYMBOL_STR(kmalloc_caches) },
-	{ 0x91715312, __VMLINUX_SYMBOL_STR(sprintf) },
-	{ 0x20c55ae0, __VMLINUX_SYMBOL_STR(sscanf) },
-	{ 0xbdfb6dbb, __VMLINUX_SYMBOL_STR(__fentry__) },
-};
-
 static const char __module_depends[]
 __used
 __attribute__((section(".modinfo"))) =
 "depends=";
 
-
-MODULE_INFO(srcversion, "F811B7B1889120BEFA2D43E");
