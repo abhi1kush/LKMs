@@ -22,7 +22,8 @@
 
 char filename[50];
 int pid=-1;
-char foutput_buffer[500];
+char output[500];
+int fs_details(char *,int );
 
 static ssize_t filename_show(struct kobject *kobj, struct kobj_attribute *attr,char *buf)
 {
@@ -36,7 +37,10 @@ static ssize_t filename_store(struct kobject *kobj, struct kobj_attribute *attr,
 }
 
 static ssize_t pid_show(struct kobject *kobj, struct kobj_attribute *attr,char *buf)
-{
+{     
+      sprintf(buf, "%d\n",pid);
+      if(pid != -1)
+         fs_details(filename,pid);
       return sprintf(buf, "%d\n",pid);
 }
 static ssize_t pid_store(struct kobject *kobj, struct kobj_attribute *attr,const char *buf, size_t count)
@@ -47,12 +51,12 @@ static ssize_t pid_store(struct kobject *kobj, struct kobj_attribute *attr,const
 
 static ssize_t foutput_show(struct kobject *kobj, struct kobj_attribute *attr,char *buf)
 {
-	return sprintf(buf,"%s\n",foutput_buffer);
+	return sprintf(buf,"%s\n",output);
 }
 
 static ssize_t foutput_store(struct kobject *kobj, struct kobj_attribute *attr,const char *buf, size_t count)
 {
-      sscanf(buf, "%s", filename);
+      sscanf(buf,"%s",output);
       return count;
 }
 
@@ -60,10 +64,8 @@ static struct kobj_attribute pid_attribute =
   __ATTR(pid, 0664, pid_show, pid_store);
 static struct kobj_attribute filename_attribute =
   __ATTR(filename, 0664, filename_show, filename_store);
-
 static struct kobj_attribute foutput_attribute =
   __ATTR(output, 0664, foutput_show, foutput_store);
-
 
 static struct attribute *fo_attrs[] = {
     &foutput_attribute.attr,
@@ -83,6 +85,11 @@ static struct attribute_group attr_group = {
     .attrs = attrs,
 };
 
+static struct kobject *finput;
+static struct kobject *foutput;
+
+/********************************************************************/
+
 int fs_details(char *filename,int pid)
 {
   int i =0;
@@ -96,27 +103,39 @@ int fs_details(char *filename,int pid)
   
   ts = pid_task(find_vpid((pid_t)pid), PIDTYPE_PID);
   rcu_read_lock();
-  fdt = ts->files->fdt; //files_fdtable(ts->file);
+  fdt = files_fdtable(ts->files); //ts->files->fdt;
   while(fdt->fd[i] !=NULL)
   {
-    f=(*fdt->fd[i]);
-    if(strcmp(f.f_path.dentry->d_name.name,filename)==0)
-    {
-      files_path = f.f_path;
+      files_path = fdt->fd[i]->f_path;
       cwd= d_path(&files_path,buf,100*sizeof(char));
-      printk(KERN_INFO"file fd %d %s",i,cwd);
+     printk("path %s",cwd);
+    if(strcmp(fdt->fd[i]->f_path.dentry->d_name.name,filename)==0)
+    {
+      files_path = fdt->fd[i]->f_path;
+      cwd= d_path(&files_path,buf,100*sizeof(char));
+      ind = fdt->fd[i]->f_path.dentry->d_inode;
+      sprintf(output,"file fd: %d\n Path : %s \n Acess time %ld \n Modified Time %ld \n blocks %ld \n Size in bytes %ld \n Consumed bytes %ld \n No ofopen instances %ld \n inode no %ld \n offset %ld \n open function address %p \n relese function address %p \n",i,cwd,ind->i_atime.tv_nsec,ind->i_mtime.tv_nsec,ind->i_blocks,ind->i_size,ind->i_bytes,fdt->fd[i]->f_count,ind->i_ino,fdt->fd[i]->f_pos,fdt->fd[i]->f_op->open,fdt->fd[i]->f_op->release);
+      
+      printk(KERN_INFO"file fd %d %s\n",i,cwd);
+      ind = fdt->fd[i]->f_path.dentry->d_inode;
+      printk(KERN_INFO"Acess time %ld\n",ind->i_atime.tv_nsec);
+      printk(KERN_INFO"MOdified time %ld\n",ind->i_mtime.tv_nsec);
+      printk(KERN_INFO"blocks %ld\n",ind->i_blocks);
+      printk(KERN_INFO"size in bytes %ld\n",ind->i_size);
+      printk(KERN_INFO"consumed bytes %ld\n",ind->i_bytes);
+      printk(KERN_INFO"NO of open instances %ld\n",fdt->fd[i]->f_count);
+      printk(KERN_INFO"inode no: %ld\n",ind->i_ino);
+      printk(KERN_INFO"offset %ld\n",fdt->fd[i]->f_pos);
+      printk(KERN_INFO"open function address %p\n",fdt->fd[i]->f_op->open);
+      printk(KERN_INFO"release function address %p\n",fdt->fd[i]->f_op->release);
+     
     }
     i++;
   }
-  //ind = ts->files->dentry->d_inode;
-  printk(KERN_INFO"inode no: %ld",ind->i_ino);
-  //fs_details(filename,pid)
   rcu_read_unlock();
   return 0;
 }
-
-static struct kobject *finput;
-static struct kobject *foutput;
+/***********************************************************************/
 
 static int init(void)
 {
@@ -133,10 +152,6 @@ static int init(void)
   retval = sysfs_create_group(foutput, &fo_attr_group);
   if (retval)
     kobject_put(foutput);
-  while(pid == -1)
-	msleep(1000);
-  if(pid != -1)
-  	fs_details(filename,pid);
   printk(KERN_INFO "inside the %s function\n", __FUNCTION__);
   return 0;
 }
