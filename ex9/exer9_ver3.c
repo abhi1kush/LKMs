@@ -9,13 +9,22 @@
 #include <linux/sched.h>
 #include <linux/mm_types.h>
 #include <linux/timer.h>
+#include<linux/slab.h>
 #include <asm/page.h>
 #include <asm/current.h>
 #include <linux/sched.h>
 #include <linux/kobject.h>
+#include<asm/uaccess.h>
+#include<asm/segment.h>
+#include<linux/buffer_head.h>
+#include<linux/version.h>
+#include<linux/string.h>
 #include <linux/string.h>
 #include <linux/sysfs.h>
+#include<linux/device.h>
+#include<linux/rcupdate.h>
 #include <linux/init.h>
+#include<linux/fs_struct.h>
 #include <linux/dcache.h>
 #include <linux/fdtable.h>
 #include <linux/fs.h>
