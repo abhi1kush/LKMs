@@ -29,35 +29,40 @@ int fs_details(char *,int );
 static ssize_t filename_show(struct kobject *kobj, struct kobj_attribute *attr,char *buf)
 {
       return sprintf(buf, "%s\n", filename);
+      printk(KERN_INFO "inside the %s function\n", __FUNCTION__);
 }
 
 static ssize_t filename_store(struct kobject *kobj, struct kobj_attribute *attr,const char *buf, size_t count)
 {
       sscanf(buf, "%s", filename);
+      printk(KERN_INFO "inside the %s function\n", __FUNCTION__);
       return count;
 }
 
 static ssize_t pid_show(struct kobject *kobj, struct kobj_attribute *attr,char *buf)
 {     
-      sprintf(buf, "%d\n",pid);
-      if(pid != -1)
-         fs_details(filename,pid);
       return sprintf(buf, "%d\n",pid);
+      printk(KERN_INFO "inside the %s function\n", __FUNCTION__);
 }
 static ssize_t pid_store(struct kobject *kobj, struct kobj_attribute *attr,const char *buf, size_t count)
 {
       sscanf(buf, "%d",&pid);
-          return count;
+    
+      if(pid != -1)
+         fs_details(filename,pid);
+      printk(KERN_INFO "inside the %s function\n", __FUNCTION__);
+      return count;
 }
 
 static ssize_t foutput_show(struct kobject *kobj, struct kobj_attribute *attr,char *buf)
 {
+	printk(KERN_INFO "inside the %s function\n", __FUNCTION__);
 	return sprintf(buf,"%s\n",output);
 }
 
 static ssize_t foutput_store(struct kobject *kobj, struct kobj_attribute *attr,const char *buf, size_t count)
 {
-      sscanf(buf,"%s",output);
+      printk(KERN_INFO "inside the %s function\n", __FUNCTION__);
       return count;
 }
 
@@ -101,19 +106,20 @@ int fs_details(char *filename,int pid)
   struct file f;
   char *cwd;
   char *buf = (char *)kmalloc(GFP_KERNEL,100*sizeof(char));
-  
+  memset(buf,0,100);
+  memset(output,0,500);
   ts = pid_task(find_vpid((pid_t)pid), PIDTYPE_PID);
+  // locking
+  fdt = files_fdtable(ts->files); //ts->files->fdt;  
   rcu_read_lock();
-  fdt = files_fdtable(ts->files); //ts->files->fdt;
   while(fdt->fd[i] !=NULL)
   {
       files_path = fdt->fd[i]->f_path;
       cwd= d_path(&files_path,buf,100*sizeof(char));
-     printk("path %s",cwd);
-    if(strcmp(fdt->fd[i]->f_path.dentry->d_name.name,filename)==0)
+     printk("path %s, filename %s",cwd,kbasename(cwd));
+    //if(strcmp(fdt->fd[i]->f_path.dentry->d_name.name,filename)==0)
+    if(strcmp(kbasename(cwd),filename)==0)
     {
-      files_path = fdt->fd[i]->f_path;
-      cwd= d_path(&files_path,buf,100*sizeof(char));
       ind = fdt->fd[i]->f_path.dentry->d_inode;
       sprintf(output,"file fd: %d\n Path : %s \n Acess time %ld \n Modified Time %ld \n blocks %ld \n Size in bytes %ld \n Consumed bytes %ld \n No ofopen instances %ld \n inode no %ld \n offset %ld \n open function address %p \n relese function address %p \n",i,cwd,ind->i_atime.tv_nsec,ind->i_mtime.tv_nsec,ind->i_blocks,ind->i_size,ind->i_bytes,fdt->fd[i]->f_count,ind->i_ino,fdt->fd[i]->f_pos,fdt->fd[i]->f_op->open,fdt->fd[i]->f_op->release);
       
@@ -129,11 +135,13 @@ int fs_details(char *filename,int pid)
       printk(KERN_INFO"offset %ld\n",fdt->fd[i]->f_pos);
       printk(KERN_INFO"open function address %p\n",fdt->fd[i]->f_op->open);
       printk(KERN_INFO"release function address %p\n",fdt->fd[i]->f_op->release);
-     
-    }
+     break;
+    
+     }
     i++;
   }
   rcu_read_unlock();
+  printk(KERN_INFO "inside the %s function\n", __FUNCTION__);
   return 0;
 }
 /***********************************************************************/
