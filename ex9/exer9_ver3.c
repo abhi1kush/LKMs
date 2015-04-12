@@ -101,11 +101,11 @@ int fs_details(char *filename,int pid)
   
   ts = pid_task(find_vpid((pid_t)pid), PIDTYPE_PID);
   rcu_read_lock();
-  fdt = files_fdtable(ts->file); //ts->files->fdt;
+  fdt = files_fdtable(ts->files); //ts->files->fdt;
   while(fdt->fd[i] !=NULL)
   {
-    f=(*fdt->fd[i]);
-    if(strcmp(f.f_path.dentry->d_name.name,filename)==0)
+   
+    if(strcmp( fdt->fd[i]->f_path.dentry->d_name.name,filename)==0)
     {
       files_path = f.f_path;
       cwd= d_path(&files_path,buf,100*sizeof(char));
