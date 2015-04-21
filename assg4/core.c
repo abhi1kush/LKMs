@@ -74,6 +74,7 @@
 #include <linux/binfmts.h>
 #include <linux/context_tracking.h>
 #include <linux/compiler.h>
+#include <asm/processor.h>
 
 #include <asm/switch_to.h>
 #include <asm/tlb.h>
@@ -97,6 +98,8 @@ int (*rq_size)(int,unsigned int,unsigned long)=NULL;
 EXPORT_SYMBOL(rq_size);
 int (*per_pid_stats)(struct task_struct *)=NULL;
 EXPORT_SYMBOL(per_pid_stats);
+int (*current_pc)(void *)=NULL;
+EXPORT_SYMBOL(current_pc);
 /**********************************************************************/
 
 void start_bandwidth_timer(struct hrtimer *period_timer, ktime_t period)
@@ -2387,6 +2390,12 @@ context_switch(struct rq *rq, struct task_struct *prev,
 	{
 		context_counter(prev,next,rq->cpu,rq->nr_switches);
 	}
+  if(current_pc!=NULL)
+  {
+    void *pc;
+    pc=current_text_addr();
+    current_pc(pc);
+  }
 	/***********************************************************************************/
 	finish_task_switch(this_rq(), prev);
 }

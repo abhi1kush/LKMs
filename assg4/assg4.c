@@ -17,7 +17,9 @@
 extern int (*context_counter)(struct task_struct *,struct task_struct *,int,unsigned long);
 extern int (* rq_size)(int,unsigned int,unsigned long);
 extern int (* per_pid_stats)(struct task_struct *);
+extern int (* current_pc)(void *);
 int pid,prio,curr_cpu;
+void *pcvalue;
 
 module_param(pid, int, 0);
 //module_param(prio, int, 0);
@@ -61,10 +63,11 @@ int proc_open2(struct inode *pinode, struct file *pfile)
 
 static int proc_readings(struct seq_file * sfile, void * any)
 {
-	seq_printf(sfile,"1pid %d cpu0 %ld cpu1 %ld cpu2 %ld cpu3 %ld total %d\n",pid,per_pid_switch_counter[0],per_pid_switch_counter[1],per_pid_switch_counter[2],per_pid_switch_counter[3],per_pid_switch_counter[0]+per_pid_switch_counter[1]+per_pid_switch_counter[2]+per_pid_switch_counter[3]);
+	/*seq_printf(sfile,"1pid %d cpu0 %ld cpu1 %ld cpu2 %ld cpu3 %ld total %d\n",pid,per_pid_switch_counter[0],per_pid_switch_counter[1],per_pid_switch_counter[2],per_pid_switch_counter[3],per_pid_switch_counter[0]+per_pid_switch_counter[1]+per_pid_switch_counter[2]+per_pid_switch_counter[3]);
 	seq_printf(sfile,"2pid %d prio %d static_prio %d normal_prio %d rt_priority %d\n",pid,prio1,prio2,prio3,prio4);
 	seq_printf(sfile,"curr_cpu %d \n",curr_cpu);
-	seq_printf(sfile,"Total time spent on cpu %d \n",total_time);
+	seq_printf(sfile,"Total time spent on cpu %d \n",total_time);*/
+	seq_printf(sfile,"pc value %p \n",pcvalue);
 	return 0;
 }
 
@@ -96,6 +99,11 @@ int hk_context_counter(struct task_struct *next,struct task_struct *prev,int cpu
 	return 0;
 }
 
+int hk_current_pc(void *pc)
+{
+  if(current->pid == pid)
+    pcvalue=pc;
+}
 int hk_rq_size(int cpu,unsigned int rqsize,unsigned long nr_switches)
 {
 	gcpu=cpu;
